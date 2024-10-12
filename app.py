@@ -7,6 +7,17 @@ from statsmodels.tsa.stattools import acf
 import yfinance as yf
 import plotly.graph_objects as go
 
+# Tambahkan CSS untuk mengubah font
+st.markdown("""
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+
+    body {
+        font-family: 'Roboto', sans-serif;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
 # Function to select dynamic lags based on autocorrelation
 def select_dynamic_lags(price_data, max_lags=20, threshold=0.2):
     autocorr_values = acf(price_data, nlags=max_lags)
