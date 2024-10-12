@@ -7,17 +7,6 @@ from statsmodels.tsa.stattools import acf
 import yfinance as yf
 import plotly.graph_objects as go
 
-# Tambahkan CSS untuk mengubah font
-st.markdown("""
-    <style>
-    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
-
-    body {
-        font-family: 'Roboto', sans-serif;
-    }
-    </style>
-""", unsafe_allow_html=True)
-
 # Function to select dynamic lags based on autocorrelation
 def select_dynamic_lags(price_data, max_lags=20, threshold=0.2):
     autocorr_values = acf(price_data, nlags=max_lags)
@@ -75,10 +64,9 @@ def xgboost_forecast(data, forecast_days, dynamic_lags):
 
     return y_test, y_pred, future_preds
 
+# Main function of the application
 def main():
-    # Set page configuration before any other Streamlit functions
     st.set_page_config(page_title="Prediksi Saham LQ45", layout="wide", initial_sidebar_state="expanded")
-    
     st.title("Prediksi Saham LQ45")
     st.sidebar.title("Menu Utama")
 
