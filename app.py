@@ -70,10 +70,11 @@ def main():
     st.title("Prediksi Saham LQ45")
     st.sidebar.title("Menu Utama")
 
-    selected_stock = st.sidebar.selectbox('Pilih Saham:', ['Pilih Saham'] + lq45_tickers, index=0)
+    # Correct date input initialization
+    start_date = st.sidebar.date_input('Tanggal Mulai (yyyy-mm-dd)', pd.to_datetime('2019-01-01'))
+    end_date = st.sidebar.date_input('Tanggal Akhir (yyyy-mm-dd)', pd.to_datetime('today'))
 
-    start_date = st.sidebar.date_input('Tanggal Mulai (yyyy/mm/dd)', pd.to_datetime('yyyy-mm-dd'))
-    end_date = st.sidebar.date_input('Tanggal Akhir (yyyy/mm/dd)', pd.to_datetime('yyyy-mm-dd'))
+    selected_stock = st.sidebar.selectbox('Pilih Saham:', ['Pilih Saham'] + lq45_tickers, index=0)
 
     # Default slider for "Jumlah Hari untuk Ramalan" set to 1 day
     forecast_days = st.sidebar.slider('Jumlah Hari untuk Ramalan:', 1, 30, 1, format="%d hari")
