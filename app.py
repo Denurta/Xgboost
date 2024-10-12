@@ -76,7 +76,7 @@ def xgboost_forecast(data, forecast_days, dynamic_lags):
     return y_test, y_pred, future_preds
 
 def main():
-    # Set page configuration before other Streamlit functions
+    # Set page configuration before any other Streamlit functions
     st.set_page_config(page_title="Prediksi Saham LQ45", layout="wide", initial_sidebar_state="expanded")
     
     st.title("Prediksi Saham LQ45")
