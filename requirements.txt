@@ -2,7 +2,8 @@ streamlit==1.29.0
 streamlit-option-menu==0.3.6
 yfinance==0.2.31
 xgboost==1.7.6
-pandas==2.1.1           # Anda dapat menyesuaikan versi sesuai kebutuhan
-matplotlib==3.8.0       # Tentukan versi untuk menjaga konsistensi
+pandas==2.1.1
+matplotlib==3.8.0
 numpy==1.26.3
-scikit-learn==1.3.0     # Pastikan versi scikit-learn kompatibel dengan Streamlit
+scikit-learn==1.3.0
+statsmodels
