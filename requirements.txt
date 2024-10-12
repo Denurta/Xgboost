@@ -5,5 +5,3 @@ pandas==2.1.1
 numpy==1.24.4
 matplotlib==3.8.0
 scikit-learn==1.3.0
-setuptools>=65.5.0  # Pastikan setuptools versi terbaru untuk mengatasi masalah distutils
-wheel>=0.38.0       # Wheel diperlukan untuk distribusi paket
