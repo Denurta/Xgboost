@@ -27,7 +27,7 @@ lq45_tickers = [
     'TOWR.JK', 'UNTR.JK', 'UNVR.JK'
 ]
 
-# Function to fetch stock data from Yahoo Finance
+# Function to fetch stock data from Yahoo Finance with caching
 @st.cache_data
 def get_stock_data(ticker, start, end):
     stock = yf.Ticker(ticker)
@@ -70,16 +70,16 @@ def main():
     st.title("Prediksi Saham LQ45")
     st.sidebar.title("Menu Utama")
 
-    # Correct date input initialization
+    # Initialize date input with default values
     start_date = st.sidebar.date_input('Tanggal Awal', pd.to_datetime('2019-01-01'))
     end_date = st.sidebar.date_input('Tanggal Akhir', pd.to_datetime('today'))
 
     selected_stock = st.sidebar.selectbox('Pilih Saham:', ['Pilih Saham'] + lq45_tickers, index=0)
 
-    # Default slider for "Jumlah Hari untuk Ramalan" set to 1 day
+    # Slider for the number of forecast days
     forecast_days = st.sidebar.slider('Jumlah Hari untuk Ramalan:', 1, 30, 1, format="%d hari")
 
-    # Default slider for "Threshold untuk Autocorrelation" set to 0.00
+    # Slider for threshold for autocorrelation
     threshold = st.sidebar.slider('Threshold untuk Autocorrelation:', 0.0, 1.0, 0.00, step=0.01, format="%.2f")
 
     if selected_stock != 'Pilih Saham':
@@ -89,7 +89,7 @@ def main():
 
         dynamic_lags = select_dynamic_lags(stock_data['Close'], max_lags=20, threshold=threshold)
 
-        # Add button to trigger forecasting
+        # Button to perform prediction
         if st.button('Lakukan Peramalan'):
             y_test, y_pred, future_preds = xgboost_forecast(stock_data, forecast_days, dynamic_lags)
 
@@ -108,6 +108,7 @@ def main():
             st.write(f'Ramalan Harga untuk {forecast_days} Hari Mendatang:')
             st.dataframe(future_df)
 
+            # Calculate metrics
             mse = mean_squared_error(y_test, y_pred)
             mae = mean_absolute_error(y_test, y_pred)
             r2 = r2_score(y_test, y_pred)
