@@ -71,8 +71,8 @@ def main():
     st.sidebar.title("Menu Utama")
 
     # Correct date input initialization
-    start_date = st.sidebar.date_input('Tanggal Mulai (yyyy-mm-dd)', pd.to_datetime('2019-01-01'))
-    end_date = st.sidebar.date_input('Tanggal Akhir (yyyy-mm-dd)', pd.to_datetime('today'))
+    start_date = st.sidebar.date_input('Tanggal Awal', pd.to_datetime('2019-01-01'))
+    end_date = st.sidebar.date_input('Tanggal Akhir', pd.to_datetime('today'))
 
     selected_stock = st.sidebar.selectbox('Pilih Saham:', ['Pilih Saham'] + lq45_tickers, index=0)
 
