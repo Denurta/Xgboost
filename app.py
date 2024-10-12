@@ -89,6 +89,7 @@ def main():
 
         dynamic_lags = select_dynamic_lags(stock_data['Close'], max_lags=20, threshold=threshold)
 
+        # Add button to trigger forecasting
         if st.button('Lakukan Peramalan'):
             y_test, y_pred, future_preds = xgboost_forecast(stock_data, forecast_days, dynamic_lags)
 
