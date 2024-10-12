@@ -9,16 +9,10 @@ import plotly.graph_objects as go
 
 # Function to select dynamic lags based on autocorrelation
 def select_dynamic_lags(price_data, max_lags=20, threshold=0.2):
-    # Calculate autocorrelation for up to max_lags
     autocorr_values = acf(price_data, nlags=max_lags)
-    
-    # Select lags where autocorrelation is above a threshold (ignoring lag 0)
     significant_lags = [lag for lag, value in enumerate(autocorr_values[1:], start=1) if abs(value) > threshold]
-    
-    # If no significant lags, choose default lags (e.g., 1, 5, 10)
     if not significant_lags:
         significant_lags = [1, 5, 10]
-    
     return significant_lags
 
 # List of LQ45 stock tickers on Yahoo Finance
@@ -43,11 +37,7 @@ def get_stock_data(ticker, start, end):
 # Function for forecasting using XGBoost
 def xgboost_forecast(data, forecast_days, dynamic_lags):
     price_data = data['Close']
-    
-    # Determine lags dynamically
     lags = dynamic_lags if dynamic_lags else [1, 2, 3]
-    
-    # Create lagged features
     lagged_data = {f'Lag_{lag}': price_data.shift(lag) for lag in lags}
     lagged_data_df = pd.DataFrame(lagged_data).dropna()
 
@@ -58,14 +48,10 @@ def xgboost_forecast(data, forecast_days, dynamic_lags):
     X_train, X_test = X[:train_size], X[train_size:]
     y_train, y_test = y[:train_size], y[train_size:]
 
-    # Initialize and fit the XGBoost model
     model = xgb.XGBRegressor(objective='reg:squarederror', max_depth=3, learning_rate=0.1, n_estimators=100)
     model.fit(X_train, y_train)
 
-    # Predict the test set
     y_pred = model.predict(X_test)
-
-    # Predict future values
     future_preds = []
     last_known_data = X_test[-1].reshape(1, -1)
 
@@ -80,47 +66,35 @@ def xgboost_forecast(data, forecast_days, dynamic_lags):
 
 # Main function of the application
 def main():
-    # Set the page configuration
     st.set_page_config(page_title="Prediksi Saham LQ45", layout="wide", initial_sidebar_state="expanded")
-
-    # Title of the application
     st.title("Prediksi Saham LQ45")
     st.sidebar.title("Menu Utama")
 
-    # Select stock to analyze (with placeholder "Pilih Saham")
     selected_stock = st.sidebar.selectbox('Pilih Saham:', ['Pilih Saham'] + lq45_tickers, index=0)
 
-    # Select start and end dates with placeholders 'yyyy/mm/dd'
-    start_date = st.sidebar.date_input('Tanggal Mulai (yyyy/mm/dd)', pd.to_datetime('2019-01-01'))
-    end_date = st.sidebar.date_input('Tanggal Akhir (yyyy/mm/dd)', pd.to_datetime('today'))
+    start_date = st.sidebar.date_input('Tanggal Mulai (yyyy/mm/dd)', pd.to_datetime('yyyy-mm-dd'))
+    end_date = st.sidebar.date_input('Tanggal Akhir (yyyy/mm/dd)', pd.to_datetime('yyyy-mm-dd'))
 
-    # Select the number of days for forecasting, with a better display format
-    forecast_days = st.sidebar.slider('Jumlah Hari untuk Ramalan:', 1, 30, 7, format="%d hari")
+    # Default slider for "Jumlah Hari untuk Ramalan" set to 1 day
+    forecast_days = st.sidebar.slider('Jumlah Hari untuk Ramalan:', 1, 30, 1, format="%d hari")
 
-    # Input threshold for lag selection, with better number formatting
-    threshold = st.sidebar.slider('Threshold untuk Autocorrelation:', 0.0, 1.0, 0.2, step=0.01, format="%.2f")
+    # Default slider for "Threshold untuk Autocorrelation" set to 0.00
+    threshold = st.sidebar.slider('Threshold untuk Autocorrelation:', 0.0, 1.0, 0.00, step=0.01, format="%.2f")
 
-    # Fetch stock data
     if selected_stock != 'Pilih Saham':
         stock_data = get_stock_data(selected_stock, start_date, end_date)
-
-        # Display stock data
         st.write(f"Data Harga Penutupan {selected_stock}:")
         st.write(stock_data)
 
-        # Select lags dynamically
         dynamic_lags = select_dynamic_lags(stock_data['Close'], max_lags=20, threshold=threshold)
 
-        # Forecast with XGBoost
         if st.button('Lakukan Peramalan'):
             y_test, y_pred, future_preds = xgboost_forecast(stock_data, forecast_days, dynamic_lags)
 
-            # Plot results (Actual vs Predicted)
             fig = go.Figure()
             fig.add_trace(go.Scatter(x=y_test.index, y=y_test, mode='lines', name='Harga Aktual'))
             fig.add_trace(go.Scatter(x=y_test.index, y=y_pred, mode='lines', name='Harga Prediksi', line=dict(dash='dash')))
 
-            # Plot future predictions
             future_dates = pd.date_range(y_test.index[-1] + pd.Timedelta(days=1), periods=forecast_days)
             fig.add_trace(go.Scatter(x=future_dates, y=future_preds, mode='lines', name='Prediksi Masa Depan', line=dict(dash='dot', color='green')))
 
@@ -128,23 +102,20 @@ def main():
                               xaxis_title='Tanggal', yaxis_title='Harga Penutupan')
             st.plotly_chart(fig)
 
-            # Display future predictions in a table
             future_df = pd.DataFrame({'Tanggal': future_dates, 'Ramalan Harga': future_preds})
             st.write(f'Ramalan Harga untuk {forecast_days} Hari Mendatang:')
             st.dataframe(future_df)
 
-            # Calculate evaluation metrics
             mse = mean_squared_error(y_test, y_pred)
             mae = mean_absolute_error(y_test, y_pred)
             r2 = r2_score(y_test, y_pred)
 
-            # Display evaluation metrics
             st.write(f"RMSE: {np.sqrt(mse):.2f}")
             st.write(f"RMAE: {mae:.2f}")
             st.write(f"R²: {r2:.2f}")
 
     else:
-        st.write("Pilih saham untuk dianalisis.")  # Display the message if no stock is selected
+        st.write("Pilih saham untuk dianalisis.")
 
 # Run the application
 if __name__ == "__main__":
