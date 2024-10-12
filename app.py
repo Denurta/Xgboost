@@ -1,13 +1,11 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 import xgboost as xgb
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
-from sklearn.model_selection import train_test_split
+from statsmodels.tsa.stattools import acf
 import yfinance as yf
 import plotly.graph_objects as go
-from statsmodels.tsa.stattools import acf
 
 # Function to select dynamic lags based on autocorrelation
 def select_dynamic_lags(price_data, max_lags=20, threshold=0.2):
@@ -25,11 +23,14 @@ def select_dynamic_lags(price_data, max_lags=20, threshold=0.2):
 
 # List of LQ45 stock tickers on Yahoo Finance
 lq45_tickers = [
-    'ACES.JK', 'ADRO.JK', 'AKRA.JK', 'AMMN.JK', 'AMRT.JK', 'ANTM.JK', 'ARTO.JK', 'ASII.JK', 'BBCA.JK', 'BBNI.JK',
-    'BBRI.JK', 'BBTN.JK', 'BMRI.JK', 'BRIS.JK', 'BRPT.JK', 'BUKA.JK', 'CPIN.JK', 'ESSA.JK', 'EXCL.JK', 'GGRM.JK',
-    'GOTO.JK', 'HRUM.JK', 'ICBP.JK', 'INCO.JK', 'INDF.JK', 'INKP.JK', 'INTP.JK', 'ISAT.JK', 'ITMG.JK', 'JSMR.JK',
-    'KLBF.JK', 'MAPI.JK', 'MBMA.JK', 'MDKA.JK', 'MEDC.JK', 'MTEL.JK', 'PGAS.JK', 'PGEO.JK', 'PTBA.JK', 'SIDO.JK',
-    'SMGR.JK', 'TLKM.JK', 'TOWR.JK', 'UNTR.JK', 'UNVR.JK'
+    'ACES.JK', 'ADRO.JK', 'AKRA.JK', 'AMMN.JK', 'AMRT.JK', 'ANTM.JK', 
+    'ARTO.JK', 'ASII.JK', 'BBCA.JK', 'BBNI.JK', 'BBRI.JK', 'BBTN.JK', 
+    'BMRI.JK', 'BRIS.JK', 'BRPT.JK', 'BUKA.JK', 'CPIN.JK', 'ESSA.JK', 
+    'EXCL.JK', 'GGRM.JK', 'GOTO.JK', 'HRUM.JK', 'ICBP.JK', 'INCO.JK', 
+    'INDF.JK', 'INKP.JK', 'INTP.JK', 'ISAT.JK', 'ITMG.JK', 'JSMR.JK', 
+    'KLBF.JK', 'MAPI.JK', 'MBMA.JK', 'MDKA.JK', 'MEDC.JK', 'MTEL.JK', 
+    'PGAS.JK', 'PGEO.JK', 'PTBA.JK', 'SIDO.JK', 'SMGR.JK', 'TLKM.JK', 
+    'TOWR.JK', 'UNTR.JK', 'UNVR.JK'
 ]
 
 # Function to fetch stock data from Yahoo Finance
@@ -46,6 +47,7 @@ def xgboost_forecast(data, forecast_days, dynamic_lags):
     # Determine lags dynamically
     lags = dynamic_lags if dynamic_lags else [1, 2, 3]
     
+    # Create lagged features
     lagged_data = {f'Lag_{lag}': price_data.shift(lag) for lag in lags}
     lagged_data_df = pd.DataFrame(lagged_data).dropna()
 
@@ -56,14 +58,16 @@ def xgboost_forecast(data, forecast_days, dynamic_lags):
     X_train, X_test = X[:train_size], X[train_size:]
     y_train, y_test = y[:train_size], y[train_size:]
 
+    # Initialize and fit the XGBoost model
     model = xgb.XGBRegressor(objective='reg:squarederror', max_depth=3, learning_rate=0.1, n_estimators=100)
     model.fit(X_train, y_train)
 
+    # Predict the test set
     y_pred = model.predict(X_test)
 
     # Predict future values
-    last_known_data = X_test[-1].reshape(1, -1)
     future_preds = []
+    last_known_data = X_test[-1].reshape(1, -1)
 
     for _ in range(forecast_days):
         next_pred = model.predict(last_known_data)[0]
@@ -81,26 +85,26 @@ def main():
 
     # Title of the application
     st.title("Prediksi Saham LQ45")
-    st.sidebar.title("Main Menu")
+    st.sidebar.title("Menu Utama")
 
     # Select stock to analyze
-    selected_stock = st.sidebar.selectbox('Pilih saham:', lq45_tickers)
+    selected_stock = st.sidebar.selectbox('Pilih Saham:', lq45_tickers)
 
     # Select start and end dates
-    start_date = st.sidebar.date_input('Tanggal mulai', pd.to_datetime('2019-01-01'))
-    end_date = st.sidebar.date_input('Tanggal akhir', pd.to_datetime('today'))
+    start_date = st.sidebar.date_input('Tanggal Mulai', pd.to_datetime('2019-01-01'))
+    end_date = st.sidebar.date_input('Tanggal Akhir', pd.to_datetime('today'))
 
     # Select the number of days for forecasting
-    forecast_days = st.sidebar.slider('Jumlah hari untuk ramalan:', 1, 30, 7)
+    forecast_days = st.sidebar.slider('Jumlah Hari untuk Ramalan:', 1, 30, 7)
 
     # Input threshold for lag selection
-    threshold = st.sidebar.slider('Threshold untuk autocorrelation:', 0.0, 1.0, 0.2, 0.01)
+    threshold = st.sidebar.slider('Threshold untuk Autocorrelation:', 0.0, 1.0, 0.2, 0.01)
 
     # Fetch stock data
     stock_data = get_stock_data(selected_stock, start_date, end_date)
 
     # Display stock data
-    st.write(f"Data harga penutupan {selected_stock}:")
+    st.write(f"Data Harga Penutupan {selected_stock}:")
     st.write(stock_data)
 
     # Select lags dynamically
@@ -112,12 +116,12 @@ def main():
 
         # Plot results (Actual vs Predicted)
         fig = go.Figure()
-        fig.add_trace(go.Scatter(x=y_test.index, y=y_test, mode='lines', name='Actual Prices'))
-        fig.add_trace(go.Scatter(x=y_test.index, y=y_pred, mode='lines', name='Predicted Prices', line=dict(dash='dash')))
+        fig.add_trace(go.Scatter(x=y_test.index, y=y_test, mode='lines', name='Harga Aktual'))
+        fig.add_trace(go.Scatter(x=y_test.index, y=y_pred, mode='lines', name='Harga Prediksi', line=dict(dash='dash')))
 
         # Plot future predictions
         future_dates = pd.date_range(y_test.index[-1] + pd.Timedelta(days=1), periods=forecast_days)
-        fig.add_trace(go.Scatter(x=future_dates, y=future_preds, mode='lines', name='Future Predictions', line=dict(dash='dot', color='green')))
+        fig.add_trace(go.Scatter(x=future_dates, y=future_preds, mode='lines', name='Prediksi Masa Depan', line=dict(dash='dot', color='green')))
 
         fig.update_layout(title=f'Prediksi Harga Saham {selected_stock} dan Ramalan {forecast_days} Hari',
                           xaxis_title='Tanggal', yaxis_title='Harga Penutupan')
