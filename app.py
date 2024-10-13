@@ -113,9 +113,10 @@ def main():
             mae = mean_absolute_error(y_test, y_pred)
             r2 = r2_score(y_test, y_pred)
 
-            st.write(f"RMSE: {np.sqrt(mse):.2f}")
-            st.write(f"RMAE: {mae:.2f}")
-            st.write(f"R²: {r2:.2f}")
+            st.write(f"Mean Squared Error: {mse:.2f}")
+            st.write(f"Root Mean Squared Error (RMSE): {np.sqrt(mse):.2f}")
+            st.write(f"Mean Absolute Error (MAE): {mae:.2f}")
+            st.write(f"R² Score: {r2:.2f}")
 
     else:
         st.write("Pilih saham untuk dianalisis.")
