@@ -64,6 +64,10 @@ def xgboost_forecast(data, forecast_days, dynamic_lags):
 
     return y_test, y_pred, future_preds
 
+# Function to calculate MAPE
+def calculate_mape(y_true, y_pred):
+    return np.mean(np.abs((y_true - y_pred) / y_true)) * 100
+
 # Main function of the application
 def main():
     st.set_page_config(page_title="Prediksi Saham LQ45", layout="wide", initial_sidebar_state="expanded")
@@ -112,11 +116,13 @@ def main():
             mse = mean_squared_error(y_test, y_pred)
             mae = mean_absolute_error(y_test, y_pred)
             r2 = r2_score(y_test, y_pred)
+            mape = calculate_mape(y_test, y_pred)
 
             st.write(f"Mean Squared Error (MSE): {mse:.2f}")
             st.write(f"Root Mean Squared Error (RMSE): {np.sqrt(mse):.2f}")
             st.write(f"Mean Absolute Error (MAE): {mae:.2f}")
             st.write(f"R² Score: {r2:.2f}")
+            st.write(f"Mean Absolute Percentage Error (MAPE): {mape:.2f}%")
 
     else:
         st.write("Pilih saham untuk dianalisis.")
