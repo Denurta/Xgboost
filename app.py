@@ -70,7 +70,7 @@ def display_title_with_logo():
     col1, col2 = st.columns([1, 5])
 
     with col1:
-        st.image("https://upload.wikimedia.org/wikipedia/commons/a/ab/Logo_Ticker.svg", width=60)
+        st.image("https://sl.bing.net/d2iJofzjizQ", width=60)
     
     with col2:
         st.markdown("<h1 style='color:#004d61; text-align:left;'>Prediksi Saham LQ45</h1>", unsafe_allow_html=True)
