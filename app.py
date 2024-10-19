@@ -92,11 +92,11 @@ def show_prediction_page():
 
     selected_stock = st.sidebar.selectbox('Pilih Saham:', ['Pilih Saham'] + lq45_tickers, index=0)
 
-    # Slider for the number of forecast days
-    forecast_days = st.sidebar.slider('Jumlah Hari untuk Ramalan:', 1, 30, 1, format="%d hari")
-
     # Slider for threshold for autocorrelation
     threshold = st.sidebar.slider('Threshold Autokorelasi:', 0.0, 1.0, 0.2, step=0.01, format="%.2f")
+    
+    # Slider for the number of forecast days
+    forecast_days = st.sidebar.slider('Jumlah Hari untuk Ramalan:', 1, 30, 1, format="%d hari")
 
     if selected_stock != 'Pilih Saham':
         stock_data = get_stock_data(selected_stock, start_date, end_date)
