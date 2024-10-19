@@ -16,32 +16,32 @@ def add_custom_css():
         <style>
         /* Change background color and font */
         body {
-            background-color: #B0C4DE; /* Steel Blue */
+            background-color: #F5F5F5;
             font-family: 'Arial', sans-serif;
         }
         
         /* Style the main title */
         .stApp header {
-            background: #4682B4; /* Steel Blue Darker */
+            background: #4682B4; /* Steel Blue */
             padding: 10px;
         }
         
         /* Style the sidebar */
         .sidebar-content {
-            background-color: #4682B4; /* Steel Blue Darker */
+            background-color: #4682B4; /* Steel Blue */
             color: white;
         }
 
         /* Style buttons */
         .stButton>button {
-            background-color: #5F9EA0; /* Cadet Blue */
+            background-color: #4682B4; /* Steel Blue */
             color: white;
             border-radius: 12px;
         }
 
         /* Style sliders */
         .stSlider label {
-            color: #4682B4; /* Steel Blue Darker */
+            color: #4682B4; /* Steel Blue */
         }
 
         /* Add spacing between sections */
@@ -52,7 +52,7 @@ def add_custom_css():
 
         /* Styling table */
         .dataframe {
-            border: 1px solid #5F9EA0; /* Cadet Blue */
+            border: 1px solid #4682B4; /* Steel Blue */
             border-radius: 5px;
         }
 
@@ -67,13 +67,7 @@ def add_custom_css():
 
 # Function to display the main title with a logo
 def display_title_with_logo():
-    col1, col2 = st.columns([1, 5])
-
-    with col1:
-        st.image("https://sl.bing.net/d2iJofzjizQ", width=60)
-    
-    with col2:
-        st.markdown("<h1 style='color:#4682B4; text-align:left;'>Prediksi Saham LQ45</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='color:#4682B4; text-align:left;'>Prediksi Saham LQ45</h1>", unsafe_allow_html=True)
 
 # Function to select dynamic lags based on autocorrelation
 def select_dynamic_lags(price_data, max_lags=20, threshold=0.2):
