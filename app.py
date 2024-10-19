@@ -12,7 +12,7 @@ def select_dynamic_lags(price_data, max_lags=20, threshold=0.2):
     autocorr_values = acf(price_data, nlags=max_lags)
     significant_lags = [lag for lag, value in enumerate(autocorr_values[1:], start=1) if abs(value) > threshold]
     if not significant_lags:
-        significant_lags = [1, 5, 10]
+        significant_lags = [1, 5, 10]  # Default lags if none are significant
     return significant_lags
 
 # List of LQ45 stock tickers on Yahoo Finance
@@ -84,60 +84,63 @@ def main():
     forecast_days = st.sidebar.slider('Jumlah Hari untuk Ramalan:', 1, 30, 1, format="%d hari")
 
     # Slider for threshold for autocorrelation
-    threshold = st.sidebar.slider('Threshold:', 0.0, 1.0, 0.00, step=0.01, format="%.2f")
+    threshold = st.sidebar.slider('Threshold:', 0.0, 1.0, 0.2, step=0.01, format="%.2f")
 
     if selected_stock != 'Pilih Saham':
         stock_data = get_stock_data(selected_stock, start_date, end_date)
-        st.write(f"Data Harga Penutupan {selected_stock}:")
-        st.write(stock_data)
 
-        dynamic_lags = select_dynamic_lags(stock_data['Close'], max_lags=20, threshold=threshold)
+        if stock_data.empty:
+            st.warning(f"Tidak ada data tersedia untuk saham {selected_stock} pada periode yang dipilih.")
+        else:
+            st.write(f"Data Harga Penutupan {selected_stock}:")
+            st.write(stock_data)
 
-        # Button to perform prediction
-        if st.button('Lakukan Peramalan'):
-            y_test, y_pred, future_preds = xgboost_forecast(stock_data, forecast_days, dynamic_lags)
+            dynamic_lags = select_dynamic_lags(stock_data['Close'], max_lags=20, threshold=threshold)
 
-            fig = go.Figure()
-            fig.add_trace(go.Scatter(x=y_test.index, y=y_test, mode='lines', name='Harga Aktual'))
-            fig.add_trace(go.Scatter(x=y_test.index, y=y_pred, mode='lines', name='Harga Prediksi', line=dict(dash='dash')))
+            # Button to perform prediction
+            if st.button('Lakukan Peramalan'):
+                y_test, y_pred, future_preds = xgboost_forecast(stock_data, forecast_days, dynamic_lags)
 
-            future_dates = pd.date_range(y_test.index[-1] + pd.Timedelta(days=1), periods=forecast_days)
-            fig.add_trace(go.Scatter(x=future_dates, y=future_preds, mode='lines', name='Prediksi Masa Depan', line=dict(dash='dot', color='green')))
+                fig = go.Figure()
+                fig.add_trace(go.Scatter(x=y_test.index, y=y_test, mode='lines', name='Harga Aktual'))
+                fig.add_trace(go.Scatter(x=y_test.index, y=y_pred, mode='lines', name='Harga Prediksi', line=dict(dash='dash')))
 
-            fig.update_layout(title=f'Prediksi Harga Saham {selected_stock} dan Ramalan {forecast_days} Hari',
-                              xaxis_title='Tanggal', yaxis_title='Harga Penutupan')
-            st.plotly_chart(fig)
+                future_dates = pd.date_range(y_test.index[-1] + pd.Timedelta(days=1), periods=forecast_days)
+                fig.add_trace(go.Scatter(x=future_dates, y=future_preds, mode='lines', name='Prediksi Masa Depan', line=dict(dash='dot', color='green')))
 
-            future_df = pd.DataFrame({'Tanggal': future_dates, 'Ramalan Harga': future_preds})
-            st.write(f'Ramalan Harga untuk {forecast_days} Hari Mendatang:')
-            st.dataframe(future_df)
+                fig.update_layout(title=f'Prediksi Harga Saham {selected_stock} dan Ramalan {forecast_days} Hari',
+                                  xaxis_title='Tanggal', yaxis_title='Harga Penutupan')
+                st.plotly_chart(fig)
 
-            # Calculate metrics
-            mse = mean_squared_error(y_test, y_pred)
-            mae = mean_absolute_error(y_test, y_pred)
-            r2 = r2_score(y_test, y_pred)
-            mape = calculate_mape(y_test, y_pred)
+                future_df = pd.DataFrame({'Tanggal': future_dates, 'Ramalan Harga': future_preds})
+                st.write(f'Ramalan Harga untuk {forecast_days} Hari Mendatang:')
+                st.dataframe(future_df)
 
-            st.write(f"Mean Squared Error (MSE): {mse:.2f}")
-            st.write(f"Root Mean Squared Error (RMSE): {np.sqrt(mse):.2f}")
-            st.write(f"Mean Absolute Error (MAE): {mae:.2f}")
-            st.write(f"R² Score: {r2:.2f}")
-            st.write(f"Mean Absolute Percentage Error (MAPE): {mape:.2f}%")
-            
+                # Calculate metrics
+                mse = mean_squared_error(y_test, y_pred)
+                mae = mean_absolute_error(y_test, y_pred)
+                r2 = r2_score(y_test, y_pred)
+                mape = calculate_mape(y_test, y_pred)
 
-            # Add simpler explanation of metrics
-            st.markdown("""
-            ### Penjelasan Metrik:
-            - **Mean Squared Error (MSE)**: Ini mengukur seberapa jauh prediksi model dari nilai sebenarnya. Nilai MSE yang lebih kecil berarti prediksi lebih akurat.
-  
-            - **Root Mean Squared Error (RMSE)**: RMSE adalah akar kuadrat dari MSE. Nilai ini menunjukkan seberapa besar kesalahan rata-rata antara prediksi dan data asli, dalam satuan yang sama dengan data. Lebih kecil berarti lebih baik.
-  
-            - **Mean Absolute Error (MAE)**: MAE mengukur rata-rata selisih absolut antara nilai yang diprediksi dan nilai sebenarnya. Semakin kecil MAE, semakin tepat prediksinya.
-  
-            - **R² (R-squared)**: Ini menunjukkan seberapa baik model menjelaskan data. Nilai antara 0 hingga 1, dengan 1 berarti model sangat cocok dengan data.
-  
-            - **Mean Absolute Percentage Error (MAPE)**: MAPE mengukur seberapa besar kesalahan prediksi dalam persentase. MAPE yang rendah berarti model memberikan prediksi yang akurat.
-            """)
+                st.write(f"Mean Squared Error (MSE): {mse:.2f}")
+                st.write(f"Root Mean Squared Error (RMSE): {np.sqrt(mse):.2f}")
+                st.write(f"Mean Absolute Error (MAE): {mae:.2f}")
+                st.write(f"R² Score: {r2:.2f}")
+                st.write(f"Mean Absolute Percentage Error (MAPE): {mape:.2f}%")
+
+                # Add simpler explanation of metrics
+                st.markdown("""
+                ### Penjelasan Metrik:
+                - **Mean Squared Error (MSE)**: Mengukur seberapa jauh prediksi dari nilai sebenarnya. Semakin kecil, semakin akurat.
+    
+                - **Root Mean Squared Error (RMSE)**: Akar kuadrat dari MSE. Menunjukkan besar kesalahan rata-rata. Semakin kecil, semakin baik.
+    
+                - **Mean Absolute Error (MAE)**: Rata-rata kesalahan absolut antara prediksi dan nilai sebenarnya. Semakin kecil, semakin akurat.
+    
+                - **R² (R-squared)**: Menunjukkan seberapa baik model menjelaskan data. Nilai 1 berarti sangat cocok, 0 berarti tidak cocok.
+    
+                - **Mean Absolute Percentage Error (MAPE)**: Mengukur kesalahan prediksi dalam persentase. Semakin kecil MAPE, semakin baik.
+                """)
 
     else:
         st.write("Pilih saham untuk dianalisis.")
