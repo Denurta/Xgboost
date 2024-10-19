@@ -65,10 +65,6 @@ def add_custom_css():
         </style>
         """, unsafe_allow_html=True)
 
-# Function to display the main title with a logo
-def display_title_with_logo():
-    st.markdown("<h1 style='color:#4682B4; text-align:left;'>Prediksi Saham LQ45</h1>", unsafe_allow_html=True)
-
 # Function to select dynamic lags based on autocorrelation
 def select_dynamic_lags(price_data, max_lags=20, threshold=0.2):
     autocorr_values = acf(price_data, nlags=max_lags)
