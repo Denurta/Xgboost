@@ -75,7 +75,7 @@ def main():
     add_custom_css()
 
     # Sidebar navigation
-    page = st.sidebar.selectbox("Pilih Halaman", ["Prediksi Saham", "Penjelasan"])
+    page = st.sidebar.selectbox("Pilih Halaman", ["Prediksi Saham", "Keterangan"])
 
     if page == "Prediksi Saham":
         show_prediction_page()
