@@ -19,13 +19,13 @@ def add_custom_css():
             background-color: #F5F5F5;
             font-family: 'Arial', sans-serif;
         }
-        
+
         /* Style the main title */
         .stApp header {
             background: #4682B4; /* Steel Blue */
             padding: 10px;
         }
-        
+
         /* Style the sidebar */
         .sidebar-content {
             background-color: #4682B4; /* Steel Blue */
@@ -65,6 +65,38 @@ def add_custom_css():
         </style>
         """, unsafe_allow_html=True)
 
+# Function to display the title with a logo in a visually appealing way
+def display_title_with_logo():
+    st.markdown("""
+        <style>
+        .title-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        .title-container img {
+            max-width: 80px;
+            margin-right: 20px;
+        }
+
+        .title-container h1 {
+            font-size: 3rem;
+            color: #4682B4;
+            margin: 0;
+        }
+
+        .stApp header {
+            background-color: #F5F5F5; /* Light background */
+        }
+        </style>
+        <div class="title-container">
+            <img src="https://kuliahdimana.id/public/magang/22954b52c576f28055eac57190504a20.jpg" alt="Logo">
+            <h1>Prediksi Saham LQ45</h1>
+        </div>
+        """, unsafe_allow_html=True)
+
 # Function to select dynamic lags based on autocorrelation
 def select_dynamic_lags(price_data, max_lags=20, threshold=0.2):
     autocorr_values = acf(price_data, nlags=max_lags)
@@ -90,7 +122,7 @@ def main():
     add_custom_css()
 
     # Sidebar navigation
-    page = st.sidebar.selectbox("Pilih Halaman", ["Prediksi Saham", "Penjelasan Metrik dan Threshold"])
+    page = st.sidebar.selectbox("Pilih Halaman", ["Prediksi Saham", "Penjelasan"])
 
     if page == "Prediksi Saham":
         display_title_with_logo()
@@ -129,7 +161,7 @@ def show_prediction_page():
             # Create Plot
             fig = go.Figure()
             fig.add_trace(go.Scatter(x=y_test.index, y=y_test, mode='lines', name='Harga Aktual'))
-            fig.add_trace(go.Scatter(x=y_test.index, y=y_pred, mode='lines', name='Harga Prediksi', line=dict(dash='dash')))
+            fig.add_trace(go.Scatter(x=y_test.index, y=y_pred, mode='lines', name='Harga Prediksi')))
             future_dates = pd.date_range(y_test.index[-1] + pd.Timedelta(days=1), periods=forecast_days)
             fig.add_trace(go.Scatter(x=future_dates, y=future_preds, mode='lines', name='Prediksi Masa Depan', line=dict(dash='dot', color='green')))
             fig.update_layout(title=f'Prediksi Harga Saham {selected_stock} dan Ramalan {forecast_days} Hari', xaxis_title='Tanggal', yaxis_title='Harga Penutupan')
@@ -158,46 +190,49 @@ def show_explanation_page():
     
     ### Penjelasan Threshold:
     
-    - **Threshold Autokorelasi**: Threshold digunakan untuk menentukan seberapa kuat hubungan antara nilai saat ini dengan nilai sebelumnya dalam data. Semakin tinggi threshold, semakin ketat model dalam memilih lag yang signifikan. Contoh: Jika threshold diatur ke 0.2, hanya lag dengan autokorelasi lebih dari 0.2 yang akan digunakan.
+    - **Threshold Autokorelasi**: Threshold digunakan untuk menentukan seberapa kuat hubungan antara nilai saat ini dengan nilai sebelumnya dalam data. Semakin tinggi threshold, semakin ketat model dalam memilih lag yang signifikan. Contoh: Jika threshold diatur ke 0.2, hanya lag dengan autokorelasi lebih dari 0.2 yang dianggap signifikan.
     """)
 
-# Function to fetch stock data from Yahoo Finance with caching
-@st.cache_data
+# Function to get stock data using Yahoo Finance
 def get_stock_data(ticker, start, end):
-    stock = yf.Ticker(ticker)
-    data = stock.history(start=start, end=end)
-    return data[['Close']]
+    stock_data = yf.download(ticker, start=start, end=end)
+    return stock_data
 
-# Function for forecasting using XGBoost
-def xgboost_forecast(data, forecast_days, dynamic_lags):
-    price_data = data['Close']
-    lags = dynamic_lags if dynamic_lags else [1, 2, 3]
-    lagged_data = {f'Lag_{lag}': price_data.shift(lag) for lag in lags}
-    lagged_data_df = pd.DataFrame(lagged_data).dropna()
-
-    X = lagged_data_df.values
-    y = price_data[lagged_data_df.index]
-
-    train_size = int(0.8 * len(X))
-    X_train, X_test = X[:train_size], X[train_size:]
-    y_train, y_test = y[:train_size], y[train_size:]
-
-    model = xgb.XGBRegressor(objective='reg:squarederror', max_depth=3, learning_rate=0.1, n_estimators=100)
+# Function to perform XGBoost forecasting
+def xgboost_forecast(stock_data, forecast_days, dynamic_lags):
+    # Prepare data for forecasting (using XGBoost)
+    X = []
+    y = []
+    close_prices = stock_data['Close'].values
+    for i in range(max(dynamic_lags), len(close_prices)):
+        X.append([close_prices[i - lag] for lag in dynamic_lags])
+        y.append(close_prices[i])
+    
+    X = np.array(X)
+    y = np.array(y)
+    
+    # Train/Test Split
+    split_index = len(X) - forecast_days
+    X_train, X_test = X[:split_index], X[split_index:]
+    y_train, y_test = y[:split_index], y[split_index:]
+    
+    # Create and train XGBoost model
+    model = xgb.XGBRegressor(objective='reg:squarederror', n_estimators=100)
     model.fit(X_train, y_train)
-
+    
+    # Predict future values
     y_pred = model.predict(X_test)
     future_preds = []
-    last_known_data = X_test[-1].reshape(1, -1)
-
+    
+    # Iteratively predict for the forecast period
     for _ in range(forecast_days):
-        next_pred = model.predict(last_known_data)[0]
+        last_known_data = [close_prices[-lag] for lag in dynamic_lags]
+        next_pred = model.predict(np.array([last_known_data]))[0]
         future_preds.append(next_pred)
-        new_data = np.roll(last_known_data, -1)
-        new_data[0, -1] = next_pred
-        last_known_data = new_data
+        close_prices = np.append(close_prices, next_pred)
+    
+    return pd.Series(y_test, index=stock_data.index[-forecast_days:]), pd.Series(y_pred, index=stock_data.index[-forecast_days:]), future_preds
 
-    return y_test, y_pred, future_preds
-
-# Run the application
+# Run the main function
 if __name__ == "__main__":
     main()
