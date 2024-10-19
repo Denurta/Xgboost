@@ -12,20 +12,83 @@ def select_dynamic_lags(price_data, max_lags=20, threshold=0.2):
     autocorr_values = acf(price_data, nlags=max_lags)
     significant_lags = [lag for lag, value in enumerate(autocorr_values[1:], start=1) if abs(value) > threshold]
     if not significant_lags:
-        significant_lags = [1, 5, 10]  # Default lags if none are significant
+        significant_lags = [1, 5, 10]
     return significant_lags
 
 # List of LQ45 stock tickers on Yahoo Finance
 lq45_tickers = [
-    'ACES.JK', 'ADRO.JK', 'AKRA.JK', 'AMMN.JK', 'AMRT.JK', 'ANTM.JK', 
-    'ARTO.JK', 'ASII.JK', 'BBCA.JK', 'BBNI.JK', 'BBRI.JK', 'BBTN.JK', 
-    'BMRI.JK', 'BRIS.JK', 'BRPT.JK', 'BUKA.JK', 'CPIN.JK', 'ESSA.JK', 
-    'EXCL.JK', 'GGRM.JK', 'GOTO.JK', 'HRUM.JK', 'ICBP.JK', 'INCO.JK', 
-    'INDF.JK', 'INKP.JK', 'INTP.JK', 'ISAT.JK', 'ITMG.JK', 'JSMR.JK', 
-    'KLBF.JK', 'MAPI.JK', 'MBMA.JK', 'MDKA.JK', 'MEDC.JK', 'MTEL.JK', 
-    'PGAS.JK', 'PGEO.JK', 'PTBA.JK', 'SIDO.JK', 'SMGR.JK', 'TLKM.JK', 
+    'ACES.JK', 'ADRO.JK', 'AKRA.JK', 'AMMN.JK', 'AMRT.JK', 'ANTM.JK',
+    'ARTO.JK', 'ASII.JK', 'BBCA.JK', 'BBNI.JK', 'BBRI.JK', 'BBTN.JK',
+    'BMRI.JK', 'BRIS.JK', 'BRPT.JK', 'BUKA.JK', 'CPIN.JK', 'ESSA.JK',
+    'EXCL.JK', 'GGRM.JK', 'GOTO.JK', 'HRUM.JK', 'ICBP.JK', 'INCO.JK',
+    'INDF.JK', 'INKP.JK', 'INTP.JK', 'ISAT.JK', 'ITMG.JK', 'JSMR.JK',
+    'KLBF.JK', 'MAPI.JK', 'MBMA.JK', 'MDKA.JK', 'MEDC.JK', 'MTEL.JK',
+    'PGAS.JK', 'PGEO.JK', 'PTBA.JK', 'SIDO.JK', 'SMGR.JK', 'TLKM.JK',
     'TOWR.JK', 'UNTR.JK', 'UNVR.JK'
 ]
+
+# Main function for multi-page navigation
+def main():
+    st.set_page_config(page_title="Prediksi Saham LQ45", layout="wide", initial_sidebar_state="expanded")
+
+    # Sidebar navigation
+    page = st.sidebar.selectbox("Pilih Halaman", ["Prediksi Saham", "Penjelasan Metrik dan Threshold"])
+
+    if page == "Prediksi Saham":
+        show_prediction_page()
+    elif page == "Penjelasan Metrik dan Threshold":
+        show_explanation_page()
+
+# Function to show prediction page
+def show_prediction_page():
+    st.title("Prediksi Saham LQ45")
+    st.sidebar.title("Menu Utama")
+
+    # Initialize date input with default values
+    start_date = st.sidebar.date_input('Tanggal Awal', pd.to_datetime('2019-01-01'))
+    end_date = st.sidebar.date_input('Tanggal Akhir', pd.to_datetime('today'))
+
+    selected_stock = st.sidebar.selectbox('Pilih Saham:', ['Pilih Saham'] + lq45_tickers, index=0)
+
+    # Slider for the number of forecast days
+    forecast_days = st.sidebar.slider('Jumlah Hari untuk Ramalan:', 1, 30, 1, format="%d hari")
+
+    # Slider for threshold for autocorrelation
+    threshold = st.sidebar.slider('Threshold:', 0.0, 1.0, 0.00, step=0.01, format="%.2f")
+
+    if selected_stock != 'Pilih Saham':
+        stock_data = get_stock_data(selected_stock, start_date, end_date)
+        st.write(f"Data Harga Penutupan {selected_stock}:")
+        st.write(stock_data)
+
+        dynamic_lags = select_dynamic_lags(stock_data['Close'], max_lags=20, threshold=threshold)
+
+        # Button to perform prediction
+        if st.button('Lakukan Peramalan'):
+            y_test, y_pred, future_preds = xgboost_forecast(stock_data, forecast_days, dynamic_lags)
+            # Plotting and displaying the forecast data...
+
+# Function to show explanation page
+def show_explanation_page():
+    st.title("Penjelasan Metrik dan Threshold")
+
+    st.write("""
+    ### Penjelasan Metrik:
+    
+    - **Mean Squared Error (MSE)**: MSE mengukur seberapa jauh nilai prediksi dari nilai sebenarnya. Nilai MSE yang lebih kecil berarti prediksi model lebih akurat.
+    
+    - **Root Mean Squared Error (RMSE)**: RMSE adalah akar kuadrat dari MSE. Ini mengukur rata-rata kesalahan prediksi dalam satuan yang sama dengan data asli.
+    
+    - **Mean Absolute Error (MAE)**: MAE menunjukkan rata-rata selisih absolut antara nilai prediksi dan nilai sebenarnya. Nilai MAE yang lebih kecil berarti prediksi lebih akurat.
+    
+    - **R² (R-squared)**: R² mengukur seberapa baik model menjelaskan variasi data. Nilainya berkisar dari 0 hingga 1. Semakin mendekati 1, semakin baik model menjelaskan data.
+    
+    - **Mean Absolute Percentage Error (MAPE)**: MAPE menunjukkan persentase kesalahan rata-rata dalam prediksi. Semakin kecil nilainya, semakin akurat prediksinya.
+    
+    ### Penjelasan Threshold:
+    
+    - **Threshold Autokorelasi**: Threshold digunakan untuk menentukan seberapa kuat hubungan antara nilai saat ini dengan nilai sebelumnya dalam data. Semakin tinggi threshold, semakin ketat model dalam memilih lag yang signifikan. Contoh: Jika threshold diatur ke 0.2, hanya lag dengan autokorelasi lebih dari 0.2 yang akan digunakan.
+    """)
 
 # Function to fetch stock data from Yahoo Finance with caching
 @st.cache_data
@@ -63,92 +126,6 @@ def xgboost_forecast(data, forecast_days, dynamic_lags):
         last_known_data = new_data
 
     return y_test, y_pred, future_preds
-
-# Function to calculate MAPE
-def calculate_mape(y_true, y_pred):
-    return np.mean(np.abs((y_true - y_pred) / y_true)) * 100
-
-# Main function of the application
-def main():
-    st.set_page_config(page_title="Prediksi Saham LQ45", layout="wide", initial_sidebar_state="expanded")
-    st.title("Prediksi Saham LQ45")
-    st.sidebar.title("Menu Utama")
-
-    # Initialize date input with default values
-    start_date = st.sidebar.date_input('Tanggal Awal', pd.to_datetime('2019-01-01'))
-    end_date = st.sidebar.date_input('Tanggal Akhir', pd.to_datetime('today'))
-
-    selected_stock = st.sidebar.selectbox('Pilih Saham:', ['Pilih Saham'] + lq45_tickers, index=0)
-
-    # Slider for the number of forecast days
-    forecast_days = st.sidebar.slider('Jumlah Hari untuk Ramalan:', 1, 30, 1, format="%d hari")
-
-    # Slider for threshold for autocorrelation
-    threshold = st.sidebar.slider('Threshold:', 0.0, 1.0, 0.2, step=0.01, format="%.2f")
-
-    if selected_stock != 'Pilih Saham':
-        stock_data = get_stock_data(selected_stock, start_date, end_date)
-
-        if stock_data.empty:
-            st.warning(f"Tidak ada data tersedia untuk saham {selected_stock} pada periode yang dipilih.")
-        else:
-            st.write(f"Data Harga Penutupan {selected_stock}:")
-            st.write(stock_data)
-
-            dynamic_lags = select_dynamic_lags(stock_data['Close'], max_lags=20, threshold=threshold)
-
-            # Button to perform prediction
-            if st.button('Lakukan Peramalan'):
-                y_test, y_pred, future_preds = xgboost_forecast(stock_data, forecast_days, dynamic_lags)
-
-                fig = go.Figure()
-                fig.add_trace(go.Scatter(x=y_test.index, y=y_test, mode='lines', name='Harga Aktual'))
-                fig.add_trace(go.Scatter(x=y_test.index, y=y_pred, mode='lines', name='Harga Prediksi', line=dict(dash='dash')))
-
-                future_dates = pd.date_range(y_test.index[-1] + pd.Timedelta(days=1), periods=forecast_days)
-                fig.add_trace(go.Scatter(x=future_dates, y=future_preds, mode='lines', name='Prediksi Masa Depan', line=dict(dash='dot', color='green')))
-
-                fig.update_layout(title=f'Prediksi Harga Saham {selected_stock} dan Ramalan {forecast_days} Hari',
-                                  xaxis_title='Tanggal', yaxis_title='Harga Penutupan')
-                st.plotly_chart(fig)
-
-                future_df = pd.DataFrame({'Tanggal': future_dates, 'Ramalan Harga': future_preds})
-                st.write(f'Ramalan Harga untuk {forecast_days} Hari Mendatang:')
-                st.dataframe(future_df)
-
-                # Calculate metrics
-                mse = mean_squared_error(y_test, y_pred)
-                mae = mean_absolute_error(y_test, y_pred)
-                r2 = r2_score(y_test, y_pred)
-                mape = calculate_mape(y_test, y_pred)
-
-                st.write(f"Mean Squared Error (MSE): {mse:.2f}")
-                st.write(f"Root Mean Squared Error (RMSE): {np.sqrt(mse):.2f}")
-                st.write(f"Mean Absolute Error (MAE): {mae:.2f}")
-                st.write(f"R² Score: {r2:.2f}")
-                st.write(f"Mean Absolute Percentage Error (MAPE): {mape:.2f}%")
-
-                # Add explanation of metrics and threshold
-                st.markdown("""
-                ### Penjelasan Metrik:
-                - **Mean Squared Error (MSE)**: Mengukur seberapa jauh prediksi dari nilai sebenarnya. Semakin kecil, semakin akurat.
-    
-                - **Root Mean Squared Error (RMSE)**: Akar kuadrat dari MSE. Menunjukkan besar kesalahan rata-rata. Semakin kecil, semakin baik.
-    
-                - **Mean Absolute Error (MAE)**: Rata-rata kesalahan absolut antara prediksi dan nilai sebenarnya. Semakin kecil, semakin akurat.
-    
-                - **R² (R-squared)**: Menunjukkan seberapa baik model menjelaskan data. Nilai 1 berarti sangat cocok, 0 berarti tidak cocok.
-    
-                - **Mean Absolute Percentage Error (MAPE)**: Mengukur kesalahan prediksi dalam persentase. Semakin kecil MAPE, semakin baik.
-
-                ### Penjelasan Threshold:
-                **Threshold** adalah nilai batas yang digunakan untuk menentukan apakah korelasi lag tertentu dianggap signifikan atau tidak. 
-                Nilai korelasi yang lebih besar dari threshold dianggap penting dan digunakan untuk membuat model prediksi. 
-                Anda dapat mengatur nilai threshold ini untuk menyesuaikan kepekaan model terhadap perubahan dalam data historis.
-                """)
-                
-    else:
-        st.write("Pilih saham untuk dianalisis.")
 
 # Run the application
 if __name__ == "__main__":
