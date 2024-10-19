@@ -75,10 +75,8 @@ def main():
     page = st.sidebar.selectbox("Pilih Halaman", ["Prediksi Saham", "Penjelasan Metrik dan Threshold"])
 
     if page == "Prediksi Saham":
-        display_title_with_logo()
         show_prediction_page()
     elif page == "Penjelasan Metrik dan Threshold":
-        display_title_with_logo()
         show_explanation_page()
 
 # Function to show prediction page
