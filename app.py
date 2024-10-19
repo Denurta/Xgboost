@@ -16,32 +16,32 @@ def add_custom_css():
         <style>
         /* Change background color and font */
         body {
-            background-color: #F5F5F5;
+            background-color: #B0C4DE; /* Steel Blue */
             font-family: 'Arial', sans-serif;
         }
         
         /* Style the main title */
         .stApp header {
-            background: #004d61;
+            background: #4682B4; /* Steel Blue Darker */
             padding: 10px;
         }
         
         /* Style the sidebar */
         .sidebar-content {
-            background-color: #004d61;
+            background-color: #4682B4; /* Steel Blue Darker */
             color: white;
         }
 
         /* Style buttons */
         .stButton>button {
-            background-color: #006d88;
+            background-color: #5F9EA0; /* Cadet Blue */
             color: white;
             border-radius: 12px;
         }
 
         /* Style sliders */
         .stSlider label {
-            color: #004d61;
+            color: #4682B4; /* Steel Blue Darker */
         }
 
         /* Add spacing between sections */
@@ -52,7 +52,7 @@ def add_custom_css():
 
         /* Styling table */
         .dataframe {
-            border: 1px solid #006d88;
+            border: 1px solid #5F9EA0; /* Cadet Blue */
             border-radius: 5px;
         }
 
@@ -73,7 +73,7 @@ def display_title_with_logo():
         st.image("https://sl.bing.net/d2iJofzjizQ", width=60)
     
     with col2:
-        st.markdown("<h1 style='color:#004d61; text-align:left;'>Prediksi Saham LQ45</h1>", unsafe_allow_html=True)
+        st.markdown("<h1 style='color:#4682B4; text-align:left;'>Prediksi Saham LQ45</h1>", unsafe_allow_html=True)
 
 # Function to select dynamic lags based on autocorrelation
 def select_dynamic_lags(price_data, max_lags=20, threshold=0.2):
@@ -111,7 +111,7 @@ def main():
 
 # Function to show prediction page
 def show_prediction_page():
-    st.markdown("<h2 style='color:#004d61;'>Prediksi Harga Saham LQ45</h2>", unsafe_allow_html=True)
+    st.markdown("<h2 style='color:#4682B4;'>Prediksi Harga Saham LQ45</h2>", unsafe_allow_html=True)
 
     # Initialize date input with default values
     start_date = st.sidebar.date_input('Tanggal Awal', pd.to_datetime('2019-01-01'))
@@ -152,7 +152,7 @@ def show_prediction_page():
 
 # Function to show explanation page
 def show_explanation_page():
-    st.markdown("<h2 style='color:#004d61;'>Penjelasan Metrik dan Threshold</h2>", unsafe_allow_html=True)
+    st.markdown("<h2 style='color:#4682B4;'>Penjelasan Metrik dan Threshold</h2>", unsafe_allow_html=True)
     st.write("""
     ### Penjelasan Metrik:
     
