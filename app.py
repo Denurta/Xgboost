@@ -79,7 +79,7 @@ def main():
 
     if page == "Prediksi Saham":
         show_prediction_page()
-    elif page == "Penjelasan":
+    elif page == "Keterangan":
         show_explanation_page()
 
 # Function to show prediction page
@@ -169,26 +169,28 @@ def xgboost_forecast(data, forecast_days, dynamic_lags):
     lagged_data_df = pd.DataFrame(lagged_data).dropna()
 
     X = lagged_data_df.values
-    y = price_data[lagged_data_df.index]
+    y = price_data.iloc[max(lags):]
 
-    train_size = int(0.8 * len(X))
+    train_size = int(len(X) * 0.8)
     X_train, X_test = X[:train_size], X[train_size:]
     y_train, y_test = y[:train_size], y[train_size:]
 
-    model = xgb.XGBRegressor(objective='reg:squarederror', max_depth=3, n_estimators=100, learning_rate=0.1)
+    model = xgb.XGBRegressor()
     model.fit(X_train, y_train)
 
     y_pred = model.predict(X_test)
-
-    last_known_values = X_test[-1].reshape(1, -1)
+    
+    # Future predictions
     future_preds = []
-    for i in range(forecast_days):
-        next_pred = model.predict(last_known_values)[0]
-        future_preds.append(next_pred)
-        last_known_values = np.roll(last_known_values, -1)
-        last_known_values[0, -1] = next_pred
+    current_input = X_test[-1].reshape(1, -1)
+    for _ in range(forecast_days):
+        future_pred = model.predict(current_input)
+        future_preds.append(future_pred[0])
+        current_input = np.roll(current_input, -1)
+        current_input[0, -1] = future_pred
 
-    return y_test, y_pred, future_preds
+    return y_test, y_pred, np.array(future_preds)
 
-if __name__ == '__main__':
+# Run the main function
+if __name__ == "__main__":
     main()
