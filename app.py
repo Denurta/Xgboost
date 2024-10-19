@@ -6,7 +6,9 @@ from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 from statsmodels.tsa.stattools import acf
 import yfinance as yf
 import plotly.graph_objects as go
-from PIL import Image
+
+# Set page configuration here, before the main function
+st.set_page_config(page_title="Prediksi Saham LQ45", layout="wide", initial_sidebar_state="expanded")
 
 # Custom CSS to improve styling
 def add_custom_css():
@@ -96,7 +98,6 @@ lq45_tickers = [
 # Main function for multi-page navigation
 def main():
     add_custom_css()
-    st.set_page_config(page_title="Prediksi Saham LQ45", layout="wide", initial_sidebar_state="expanded")
 
     # Sidebar navigation
     page = st.sidebar.selectbox("Pilih Halaman", ["Prediksi Saham", "Penjelasan Metrik dan Threshold"])
