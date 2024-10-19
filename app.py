@@ -31,7 +31,10 @@ def add_custom_css():
             color: white;
             border-radius: 12px;
         }
-        .stSlider label {
+        .stSlider label, .stSelectbox label, .stDateInput label {
+            color: #4682B4;
+        }
+        .stSidebar .stSelectbox div, .stSidebar .stDateInput div, .stSidebar .stSlider div {
             color: #4682B4;
         }
         .stMarkdown {
@@ -160,19 +163,18 @@ def xgboost_forecast(data, forecast_days, dynamic_lags):
     X_train, X_test = X[:train_size], X[train_size:]
     y_train, y_test = y[:train_size], y[train_size:]
 
-    model = xgb.XGBRegressor(objective='reg:squarederror', max_depth=3, learning_rate=0.1, n_estimators=100)
+    model = xgb.XGBRegressor(objective='reg:squarederror', max_depth=3, n_estimators=100, learning_rate=0.1)
     model.fit(X_train, y_train)
 
     y_pred = model.predict(X_test)
 
+    last_known_values = X_test[-1].reshape(1, -1)
     future_preds = []
-    last_values = X_test[-1].reshape(1, -1)
-    for _ in range(forecast_days):
-        next_pred = model.predict(last_values)[0]
+    for i in range(forecast_days):
+        next_pred = model.predict(last_known_values)[0]
         future_preds.append(next_pred)
-        next_values = np.roll(last_values, shift=-1)
-        next_values[0, -1] = next_pred
-        last_values = next_values
+        last_known_values = np.roll(last_known_values, -1)
+        last_known_values[0, -1] = next_pred
 
     return y_test, y_pred, future_preds
 
