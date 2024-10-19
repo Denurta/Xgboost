@@ -127,6 +127,10 @@ def show_prediction_page():
 def show_explanation_page():
     st.markdown("<h2 style='color:#4682B4;'>Penjelasan</h2>", unsafe_allow_html=True)
     st.write("""
+     ### Penjelasan Threshold:
+    
+    - **Threshold Autokorelasi**: Threshold digunakan untuk menentukan seberapa kuat hubungan antara nilai saat ini dengan nilai sebelumnya dalam data. Semakin tinggi threshold, semakin ketat model dalam memilih lag yang signifikan. Contoh: Jika threshold diatur ke 0.2, hanya lag dengan autokorelasi lebih dari 0.2 yang akan digunakan.
+    
     ### Penjelasan Metrik:
     
     - **Mean Squared Error (MSE)**: MSE mengukur seberapa jauh nilai prediksi dari nilai sebenarnya. Nilai MSE yang lebih kecil berarti prediksi model lebih akurat.
@@ -137,9 +141,6 @@ def show_explanation_page():
     
     - **R² (R-squared)**: R² mengukur seberapa baik model menjelaskan variasi data. Nilainya berkisar dari 0 hingga 1. Semakin mendekati 1, semakin baik model menjelaskan data.
     
-    ### Penjelasan Threshold:
-    
-    - **Threshold Autokorelasi**: Threshold digunakan untuk menentukan seberapa kuat hubungan antara nilai saat ini dengan nilai sebelumnya dalam data. Semakin tinggi threshold, semakin ketat model dalam memilih lag yang signifikan. Contoh: Jika threshold diatur ke 0.2, hanya lag dengan autokorelasi lebih dari 0.2 yang akan digunakan.
     """)
 
 # Function to fetch stock data from Yahoo Finance with caching
