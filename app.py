@@ -72,11 +72,11 @@ def main():
     add_custom_css()
 
     # Sidebar navigation
-    page = st.sidebar.selectbox("Pilih Halaman", ["Prediksi Saham", "Penjelasan Metrik dan Threshold"])
+    page = st.sidebar.selectbox("Pilih Halaman", ["Prediksi Saham", "Penjelasan"])
 
     if page == "Prediksi Saham":
         show_prediction_page()
-    elif page == "Penjelasan Metrik dan Threshold":
+    elif page == "Penjelasan":
         show_explanation_page()
 
 # Function to show prediction page
@@ -122,7 +122,7 @@ def show_prediction_page():
 
 # Function to show explanation page
 def show_explanation_page():
-    st.markdown("<h2 style='color:#4682B4;'>Penjelasan Metrik dan Threshold</h2>", unsafe_allow_html=True)
+    st.markdown("<h2 style='color:#4682B4;'>Penjelasan</h2>", unsafe_allow_html=True)
     st.write("""
     ### Penjelasan Metrik:
     
