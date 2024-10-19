@@ -123,6 +123,21 @@ def main():
             st.write(f"Mean Absolute Error (MAE): {mae:.2f}")
             st.write(f"R² Score: {r2:.2f}")
             st.write(f"Mean Absolute Percentage Error (MAPE): {mape:.2f}%")
+            
+
+            # Add simpler explanation of metrics
+            st.markdown("""
+            ### Penjelasan Metrik:
+            - **Mean Squared Error (MSE)**: Ini mengukur seberapa jauh prediksi model dari nilai sebenarnya. Nilai MSE yang lebih kecil berarti prediksi lebih akurat.
+  
+            - **Root Mean Squared Error (RMSE)**: RMSE adalah akar kuadrat dari MSE. Nilai ini menunjukkan seberapa besar kesalahan rata-rata antara prediksi dan data asli, dalam satuan yang sama dengan data. Lebih kecil berarti lebih baik.
+  
+            - **Mean Absolute Error (MAE)**: MAE mengukur rata-rata selisih absolut antara nilai yang diprediksi dan nilai sebenarnya. Semakin kecil MAE, semakin tepat prediksinya.
+  
+            - **R² (R-squared)**: Ini menunjukkan seberapa baik model menjelaskan data. Nilai antara 0 hingga 1, dengan 1 berarti model sangat cocok dengan data.
+  
+            - **Mean Absolute Percentage Error (MAPE)**: MAPE mengukur seberapa besar kesalahan prediksi dalam persentase. MAPE yang rendah berarti model memberikan prediksi yang akurat.
+            """)
 
     else:
         st.write("Pilih saham untuk dianalisis.")
