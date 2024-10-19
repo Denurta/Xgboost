@@ -128,7 +128,7 @@ def main():
                 st.write(f"R² Score: {r2:.2f}")
                 st.write(f"Mean Absolute Percentage Error (MAPE): {mape:.2f}%")
 
-                # Add simpler explanation of metrics
+                # Add explanation of metrics and threshold
                 st.markdown("""
                 ### Penjelasan Metrik:
                 - **Mean Squared Error (MSE)**: Mengukur seberapa jauh prediksi dari nilai sebenarnya. Semakin kecil, semakin akurat.
@@ -140,8 +140,13 @@ def main():
                 - **R² (R-squared)**: Menunjukkan seberapa baik model menjelaskan data. Nilai 1 berarti sangat cocok, 0 berarti tidak cocok.
     
                 - **Mean Absolute Percentage Error (MAPE)**: Mengukur kesalahan prediksi dalam persentase. Semakin kecil MAPE, semakin baik.
-                """)
 
+                ### Penjelasan Threshold:
+                **Threshold** adalah nilai batas yang digunakan untuk menentukan apakah korelasi lag tertentu dianggap signifikan atau tidak. 
+                Nilai korelasi yang lebih besar dari threshold dianggap penting dan digunakan untuk membuat model prediksi. 
+                Anda dapat mengatur nilai threshold ini untuk menyesuaikan kepekaan model terhadap perubahan dalam data historis.
+                """)
+                
     else:
         st.write("Pilih saham untuk dianalisis.")
 
