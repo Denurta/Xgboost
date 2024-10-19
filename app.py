@@ -6,6 +6,72 @@ from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 from statsmodels.tsa.stattools import acf
 import yfinance as yf
 import plotly.graph_objects as go
+from PIL import Image
+
+# Custom CSS to improve styling
+def add_custom_css():
+    st.markdown("""
+        <style>
+        /* Change background color and font */
+        body {
+            background-color: #F5F5F5;
+            font-family: 'Arial', sans-serif;
+        }
+        
+        /* Style the main title */
+        .stApp header {
+            background: #004d61;
+            padding: 10px;
+        }
+        
+        /* Style the sidebar */
+        .sidebar-content {
+            background-color: #004d61;
+            color: white;
+        }
+
+        /* Style buttons */
+        .stButton>button {
+            background-color: #006d88;
+            color: white;
+            border-radius: 12px;
+        }
+
+        /* Style sliders */
+        .stSlider label {
+            color: #004d61;
+        }
+
+        /* Add spacing between sections */
+        .stMarkdown {
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+
+        /* Styling table */
+        .dataframe {
+            border: 1px solid #006d88;
+            border-radius: 5px;
+        }
+
+        /* Make images responsive */
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        </style>
+        """, unsafe_allow_html=True)
+
+# Function to display the main title with a logo
+def display_title_with_logo():
+    col1, col2 = st.columns([1, 5])
+
+    with col1:
+        st.image("https://upload.wikimedia.org/wikipedia/commons/a/ab/Logo_Ticker.svg", width=60)
+    
+    with col2:
+        st.markdown("<h1 style='color:#004d61; text-align:left;'>Prediksi Saham LQ45</h1>", unsafe_allow_html=True)
 
 # Function to select dynamic lags based on autocorrelation
 def select_dynamic_lags(price_data, max_lags=20, threshold=0.2):
@@ -17,32 +83,34 @@ def select_dynamic_lags(price_data, max_lags=20, threshold=0.2):
 
 # List of LQ45 stock tickers on Yahoo Finance
 lq45_tickers = [
-    'ACES.JK', 'ADRO.JK', 'AKRA.JK', 'AMMN.JK', 'AMRT.JK', 'ANTM.JK',
-    'ARTO.JK', 'ASII.JK', 'BBCA.JK', 'BBNI.JK', 'BBRI.JK', 'BBTN.JK',
-    'BMRI.JK', 'BRIS.JK', 'BRPT.JK', 'BUKA.JK', 'CPIN.JK', 'ESSA.JK',
-    'EXCL.JK', 'GGRM.JK', 'GOTO.JK', 'HRUM.JK', 'ICBP.JK', 'INCO.JK',
-    'INDF.JK', 'INKP.JK', 'INTP.JK', 'ISAT.JK', 'ITMG.JK', 'JSMR.JK',
-    'KLBF.JK', 'MAPI.JK', 'MBMA.JK', 'MDKA.JK', 'MEDC.JK', 'MTEL.JK',
-    'PGAS.JK', 'PGEO.JK', 'PTBA.JK', 'SIDO.JK', 'SMGR.JK', 'TLKM.JK',
+    'ACES.JK', 'ADRO.JK', 'AKRA.JK', 'AMMN.JK', 'AMRT.JK', 'ANTM.JK', 
+    'ARTO.JK', 'ASII.JK', 'BBCA.JK', 'BBNI.JK', 'BBRI.JK', 'BBTN.JK', 
+    'BMRI.JK', 'BRIS.JK', 'BRPT.JK', 'BUKA.JK', 'CPIN.JK', 'ESSA.JK', 
+    'EXCL.JK', 'GGRM.JK', 'GOTO.JK', 'HRUM.JK', 'ICBP.JK', 'INCO.JK', 
+    'INDF.JK', 'INKP.JK', 'INTP.JK', 'ISAT.JK', 'ITMG.JK', 'JSMR.JK', 
+    'KLBF.JK', 'MAPI.JK', 'MBMA.JK', 'MDKA.JK', 'MEDC.JK', 'MTEL.JK', 
+    'PGAS.JK', 'PGEO.JK', 'PTBA.JK', 'SIDO.JK', 'SMGR.JK', 'TLKM.JK', 
     'TOWR.JK', 'UNTR.JK', 'UNVR.JK'
 ]
 
 # Main function for multi-page navigation
 def main():
+    add_custom_css()
     st.set_page_config(page_title="Prediksi Saham LQ45", layout="wide", initial_sidebar_state="expanded")
 
     # Sidebar navigation
     page = st.sidebar.selectbox("Pilih Halaman", ["Prediksi Saham", "Penjelasan Metrik dan Threshold"])
 
     if page == "Prediksi Saham":
+        display_title_with_logo()
         show_prediction_page()
     elif page == "Penjelasan Metrik dan Threshold":
+        display_title_with_logo()
         show_explanation_page()
 
 # Function to show prediction page
 def show_prediction_page():
-    st.title("Prediksi Saham LQ45")
-    st.sidebar.title("Menu Utama")
+    st.markdown("<h2 style='color:#004d61;'>Prediksi Harga Saham LQ45</h2>", unsafe_allow_html=True)
 
     # Initialize date input with default values
     start_date = st.sidebar.date_input('Tanggal Awal', pd.to_datetime('2019-01-01'))
@@ -58,7 +126,7 @@ def show_prediction_page():
 
     if selected_stock != 'Pilih Saham':
         stock_data = get_stock_data(selected_stock, start_date, end_date)
-        st.write(f"Data Harga Penutupan {selected_stock}:")
+        st.write(f"<b>Data Harga Penutupan {selected_stock}:</b>", unsafe_allow_html=True)
         st.write(stock_data)
 
         dynamic_lags = select_dynamic_lags(stock_data['Close'], max_lags=20, threshold=threshold)
@@ -66,12 +134,24 @@ def show_prediction_page():
         # Button to perform prediction
         if st.button('Lakukan Peramalan'):
             y_test, y_pred, future_preds = xgboost_forecast(stock_data, forecast_days, dynamic_lags)
-            # Plotting and displaying the forecast data...
+
+            # Create Plot
+            fig = go.Figure()
+            fig.add_trace(go.Scatter(x=y_test.index, y=y_test, mode='lines', name='Harga Aktual'))
+            fig.add_trace(go.Scatter(x=y_test.index, y=y_pred, mode='lines', name='Harga Prediksi', line=dict(dash='dash')))
+            future_dates = pd.date_range(y_test.index[-1] + pd.Timedelta(days=1), periods=forecast_days)
+            fig.add_trace(go.Scatter(x=future_dates, y=future_preds, mode='lines', name='Prediksi Masa Depan', line=dict(dash='dot', color='green')))
+            fig.update_layout(title=f'Prediksi Harga Saham {selected_stock} dan Ramalan {forecast_days} Hari', xaxis_title='Tanggal', yaxis_title='Harga Penutupan')
+            st.plotly_chart(fig)
+
+            # Display future predictions
+            future_df = pd.DataFrame({'Tanggal': future_dates, 'Ramalan Harga': future_preds})
+            st.write(f'Ramalan Harga untuk {forecast_days} Hari Mendatang:')
+            st.dataframe(future_df)
 
 # Function to show explanation page
 def show_explanation_page():
-    st.title("Penjelasan Metrik dan Threshold")
-
+    st.markdown("<h2 style='color:#004d61;'>Penjelasan Metrik dan Threshold</h2>", unsafe_allow_html=True)
     st.write("""
     ### Penjelasan Metrik:
     
